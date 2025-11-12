@@ -1,31 +1,42 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 const cors = require("cors");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(express.json());
+// Core middleware
 app.use(cors());
+app.use(express.json());
 
-// Import routes
-const authRoutes = require("./routes/authRoutes");
+// Route imports
+const authRouter = require("./routes/authRoutes");
 
-// Use routes with base path /api
-app.use("/api", authRoutes);
+// API route prefix
+app.use("/api", authRouter);
 
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+// Connect to MongoDB
+const startDatabase = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Database connection established");
+  } catch (error) {
+    console.error("❌ Failed to connect to MongoDB:", error.message);
+    process.exit(1);
+  }
+};
 
-app.get("/", (req, res) => {
-  res.send("Server is running...");
+startDatabase();
+
+// Root endpoint
+app.get("/", (_req, res) => {
+  res.send("Backend server active!");
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const port = process.env.PORT || 5000;
+
+app.listen(port, () => {
+  console.log(`🚀 Server is live on port ${port}`);
+});
